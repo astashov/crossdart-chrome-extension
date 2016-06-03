@@ -1,24 +1,42 @@
-# Crossdart
+# Crossdart Chrome Extension
 
-This project does two things:
+This extension adds "Go to definition" and "Find usages" functionality to Dart projects on Github,
+to the tree views and pull requests.
+You can take it there:
 
-1. It's a generator of the site [http://crossdart.info](Crossdart)
-2. It's a generator of the JSON Crossdart metadata, which is used for the Crossdart Chrome extension, to make the Dart code on Github hyperlinked in tree views and pull requests.
-
-Let's review the second case, since you can get some benefits from it for your project.
+[https://chrome.google.com/webstore/detail/crossdart-chrome-extensio/jmdjoliiaibifkklhipgmnciiealomhd](https://chrome.google.com/webstore/detail/crossdart-chrome-extensio/jmdjoliiaibifkklhipgmnciiealomhd)
 
 ## Demo
 
-[Here](http://crossdart.info/demo.html) (1.7MB)
+[Here](https://www.crossdart.info/demo.html) (1.7MB)
 
 ## Installation
 
-We have servers, which will clone your repo, analyze the source code, and upload the metadata for adding hyperlinks on Github pages to Google Cloud Storage.
-It works transparently for you, if you didn't change the URL where to get the metadata in the Chrome extension settings.
+If you have a public project, or a private project without other private dependencies, you can just install
+the extension into Chrome, go to a repo on Github, click on "XD" icon in the Chrome toolbar, and check the checkbox
+"Enable Crossdart for this project". That's it, the extension will send a request to analyze the source code
+to https://metadata.crossdart.com/analyze, and it will analyze the source code and upload the analysis data to
+Google Cloud Storage, where the extension will take it from. The extension will show the progress of the operations
+in a popup in the right top corner.
 
-We don't do anything with your source code except analyzing it, and try to get rid of the cloned version on our servers as soon as possible, but in
-some cases you still may not want to share your source code with us. In that case, you can run Crossdart and upload the metadata file on your servers,
-e.g. on Travis CI. 
+You can preventively send the JSON request to POST https://metadata.crossdart.com/analyze, to speed up the analyzing process
+(e.g. on commit or pull request hook). It accepts JSON payload, which look like this:
+
+* url - required, String, the url of the project, looks like https://github.com/johnsmith/my-dart-project
+* sha - required, String, full SHA of the commit
+* token - optional, String, personal access token in case your project is private
+
+Example:
+
+```json
+{"url":"https://github.com/johnsmith/my-dart-project","sha":"62e3956d59878f24dd0bdb042e2f3bc320bf159f"}
+```
+
+We destroy the cloned repo on metadata.crossdart.com as soon as possible right
+after finishing analyzing, but in case you don't want to give access to your
+code to anything at all, or you have private dependencies in your project,
+you'll have to build the analysis data and upload them to some publicly
+available place (e.g. S3 or GCS) by yourself.
 
 Unfortunately, for now this is not just one-click installation, you have to do plenty of steps to make it work.
 I'll try to document them here in details, to simplify the ramp up process.
@@ -42,8 +60,6 @@ $ pub global run crossdart --input=/home/john/my_dart_project --dart-sdk=/usr/li
 ```
 
 It will generate the crossdart.json file in the `--input` directory, which you will need to put somewhere, for example, to S3 (see below).
-
-Then, install [Crossdart Chrome Extension](https://chrome.google.com/webstore/detail/crossdart-chrome-extensio/jmdjoliiaibifkklhipgmnciiealomhd) from Chrome Web Store, and you are good to go.
 
 ## Uploading metadata
 
@@ -127,7 +143,7 @@ How cool is that! :)
 
 After installing [Crossdart Chrome Extension](https://chrome.google.com/webstore/detail/crossdart-chrome-extensio/jmdjoliiaibifkklhipgmnciiealomhd), you'll see a little "XD" icon in Chrome's URL bar on Github pages.
 If you click to it, you'll see a little popup, where you can turn Crossdart on for the current project, and also
-specify the URL where it should get the metadata files from (in case you don't want to use the defaults. If you do - just leave it empty).
+specify the URL where it should get the analysis data from (in case you generated and uploaded it by yourself. If you don't - just leave it empty).
 You only should provide a base for this URL, the extension will later append git sha and 'crossdart.json' to it. I.e. if you specify URL in this field like:
 
 ```
