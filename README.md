@@ -12,6 +12,8 @@ You can take it there:
 
 ## Installation
 
+### Simple way
+
 If you have a public project, or a private project without other private dependencies, you can just install
 the extension into Chrome, go to a repo on Github, click on "XD" icon in the Chrome toolbar, and check the checkbox
 "Enable Crossdart for this project". That's it, the extension will send a request to analyze the source code
@@ -31,6 +33,8 @@ Example:
 ```json
 {"url":"https://github.com/johnsmith/my-dart-project","sha":"62e3956d59878f24dd0bdb042e2f3bc320bf159f"}
 ```
+
+### More complicated, but private and secure way (for super private projects)
 
 We destroy the cloned repo on metadata.crossdart.com as soon as possible right
 after finishing analyzing, but in case you don't want to give access to your
@@ -61,7 +65,7 @@ $ pub global run crossdart --input=/home/john/my_dart_project --dart-sdk=/usr/li
 
 It will generate the crossdart.json file in the `--input` directory, which you will need to put somewhere, for example, to S3 (see below).
 
-## Uploading metadata
+#### Uploading metadata
 
 You need some publicly available place to store metadatas for every single commit for your project. You can use S3 for that. It's cheap and relatively easy to configure.
 
@@ -94,7 +98,7 @@ $ s3cmd -P -c /path/to/.s3cfg put /path/to/crossdart.json s3://my-bucket/my-proj
 
 The structure of the URL on S3 is important. It should always end with git sha and `crossdart.json`. Like above, the URL ends with `32c139a7775736e96e476b1e0c89dd20e6588155/crossdart.json`
 
-## Integrating with Travis CI
+#### Integrating with Travis CI
 
 Doing all the uploads to S3 manually is very cumbersome, so better to use some machinery, like CI or build server, to do that stuff for you, for example Travis CI. Here's how the configuration could look like:
 
