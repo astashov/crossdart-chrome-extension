@@ -10,6 +10,14 @@ You can take it there:
 
 [Here](https://www.crossdart.info/demo.html) (1.7MB)
 
+## Some examples
+
+Make sure you have the [extension](https://chrome.google.com/webstore/detail/crossdart-chrome-extensio/jmdjoliiaibifkklhipgmnciiealomhd) installed, then go to one of the following links, click on 'XD' icon in the toolbar, and check "Enable Crossdart for this project", and click "Apply"
+
+* [Pull Request for the 'logging' package](https://github.com/dart-lang/logging/pull/28/files#diff-d084143be045800c1c34fffff152e585R166)
+* [IOClient class in the 'http' package](https://github.com/dart-lang/http/blob/15d1b6b139a71f6aa85fa34236324db92b97a49f/lib/src/io_client.dart)
+* [Pull Request for the 'sqljocky' package](https://github.com/jamesots/sqljocky/pull/67/files#diff-e4c95e6ae84ea58b5c9b7be275d62f80L41)
+
 ## Installation
 
 ### Simple way
