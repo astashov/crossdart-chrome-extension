@@ -1,7 +1,7 @@
 (function () {
   function applyTreeCrossdart(github, crossdartBaseUrl, crossdart) {
     github.path.getRealRef(function (ref) {
-      var crossdartUrl = Path.join([crossdartBaseUrl, ref, "crossdart.json"]);
+      var crossdartUrl = Path.join([crossdartBaseUrl, github.basePath, ref, "crossdart.json"]);
       Request.getJson(crossdartUrl, function (json) {
         crossdart.applyJson(json);
       }, Errors.showUrlError);
@@ -9,14 +9,16 @@
   }
 
   function applyPullSplitCrossdart(github, crossdartBaseUrl, crossdart) {
-    github.path.getRealRefs(function (refs) {
+    github.path.getRealRefs(function (refs, repoNames) {
       var oldRef = refs[0];
       var newRef = refs[1];
-      var crossdartUrlOld = Path.join([crossdartBaseUrl, oldRef, "crossdart.json"]);
+      var oldRepoName = repoNames[0];
+      var newRepoName = repoNames[1];
+      var crossdartUrlOld = Path.join([crossdartBaseUrl, oldRepoName, oldRef, "crossdart.json"]);
       Request.getJson(crossdartUrlOld, function (oldJson) {
         crossdart.applyJson(CROSSDART_PULL_OLD, oldJson, oldRef);
       }, Errors.showUrlError);
-      var crossdartUrlNew = Path.join([crossdartBaseUrl, newRef, "crossdart.json"]);
+      var crossdartUrlNew = Path.join([crossdartBaseUrl, newRepoName, newRef, "crossdart.json"]);
       Request.getJson(crossdartUrlNew, function (newJson) {
         crossdart.applyJson(CROSSDART_PULL_NEW, newJson, newRef);
       }, Errors.showUrlError);
@@ -24,42 +26,44 @@
   }
 
   function applyPullUnifiedCrossdart(github, crossdartBaseUrl, crossdart) {
-    github.path.getRealRefs(function (refs) {
+    github.path.getRealRefs(function (refs, repoNames) {
       var oldRef = refs[0];
       var newRef = refs[1];
-      var crossdartUrlOld = Path.join([crossdartBaseUrl, oldRef, "crossdart.json"]);
+      var oldRepoName = repoNames[0];
+      var newRepoName = repoNames[1];
+      var crossdartUrlOld = Path.join([crossdartBaseUrl, oldRepoName, oldRef, "crossdart.json"]);
       Request.getJson(crossdartUrlOld, function (oldJson) {
         crossdart.applyJson(CROSSDART_PULL_OLD, oldJson, oldRef);
       }, Errors.showUrlError);
-      var crossdartUrlNew = Path.join([crossdartBaseUrl, newRef, "crossdart.json"]);
+      var crossdartUrlNew = Path.join([crossdartBaseUrl, newRepoName, newRef, "crossdart.json"]);
       Request.getJson(crossdartUrlNew, function (newJson) {
         crossdart.applyJson(CROSSDART_PULL_NEW, newJson, newRef);
       }, Errors.showUrlError);
     }, Errors.showTokenError);
   }
 
-  function checkRef(index, github, baseUrl, ref, callback) {
-    var url = baseUrl + "/" + ref + "/crossdart.json";
+  function checkRef(index, github, baseUrl, ref, repoName, callback) {
+    var url = baseUrl + repoName + "/" + ref + "/crossdart.json";
     Request.head(url, function () {
       Status.show(index, ref, "done");
       callback();
     },
     function () {
-      Request.get(baseUrl + "/" + ref + "/status.txt", function (status) {
+      Request.get(baseUrl + repoName + "/" + ref + "/status.txt", function (status) {
         Status.show(index, ref, status);
         if (status !== "error") {
           setTimeout(function () {
-            checkRef(index, github, baseUrl, ref, callback);
+            checkRef(index, github, baseUrl, ref, repoName, callback);
           }, 1000);
         }
       }, function () {
         Request.post("https://metadata.crossdart.info/analyze", {
-          url: "https://github.com/" + github.basePath,
+          url: "https://github.com/" + repoName,
           sha: ref,
           token: Github.token
         }, function () {
           setTimeout(function () {
-            checkRef(index, github, baseUrl, ref, callback);
+            checkRef(index, github, baseUrl, ref, repoName, callback);
           }, 1000);
         });
       });
@@ -68,17 +72,17 @@
 
   function fetchMetadataUrl(shouldReuseCrossdart) {
     var github = new Github();
-    var baseUrl = "https://www.crossdart.info/metadata/" + github.basePath;
+    var baseUrl = "https://www.crossdart.info/metadata/";
     if (github.type === Github.PULL_REQUEST) {
-      github.path.getRealRefs(function (refs) {
+      github.path.getRealRefs(function (refs, repoNames) {
         var isOneDone = false;
-        checkRef(0, github, baseUrl, refs[0], function () {
+        checkRef(0, github, baseUrl, refs[0], repoNames[0], function () {
           if (isOneDone) {
             applyCrossdart(baseUrl, shouldReuseCrossdart);
           }
           isOneDone = true;
         });
-        checkRef(1, github, baseUrl, refs[1], function () {
+        checkRef(1, github, baseUrl, refs[1], repoNames[1], function () {
           if (isOneDone) {
             applyCrossdart(baseUrl, shouldReuseCrossdart);
           }
@@ -87,7 +91,7 @@
       });
     } else {
       github.path.getRealRef(function (ref) {
-        checkRef(0, github, baseUrl, ref, function () {
+        checkRef(0, github, baseUrl, ref, github.basePath, function () {
           applyCrossdart(baseUrl, shouldReuseCrossdart);
         });
       });

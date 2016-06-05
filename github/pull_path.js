@@ -10,8 +10,8 @@
     if (this._getRealRefs === undefined) {
       var path = Path.join(["repos", this.github.basePath, "pulls", this.id]);
       Github.api(path, function (json) {
-        this._getRealRefs = [json.base.sha, json.head.sha];
-        callback(this._getRealRefs);
+        this._getRealRefs = [json.base.sha, json.head.sha, json.base.repo.full_name, json.head.repo.full_name];
+        callback(this._getRealRefs.slice(0, 2), this._getRealRefs.slice(2, 4));
       }, errorCallback);
     } else {
       callback(this._getRealRefs);

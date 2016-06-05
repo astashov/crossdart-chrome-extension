@@ -93,10 +93,10 @@ use_https = True
 and then run `s3cmd` to put newly created file. Something like:
 
 ```bash
-$ s3cmd -P -c /path/to/.s3cfg put /path/to/crossdart.json s3://my-bucket/my-project/32c139a7775736e96e476b1e0c89dd20e6588155/crossdart.json
+$ s3cmd -P -c /path/to/.s3cfg put /path/to/crossdart.json s3://my-bucket/my-github-name/my-project/32c139a7775736e96e476b1e0c89dd20e6588155/crossdart.json
 ```
 
-The structure of the URL on S3 is important. It should always end with git sha and `crossdart.json`. Like above, the URL ends with `32c139a7775736e96e476b1e0c89dd20e6588155/crossdart.json`
+The structure of the URL on S3 is important. It should always end with the github name, project name, git sha and `crossdart.json`. Like above, the URL ends with `my-github-name/my-project/32c139a7775736e96e476b1e0c89dd20e6588155/crossdart.json`
 
 #### Integrating with Travis CI
 
@@ -135,7 +135,7 @@ pub global activate crossdart
 echo "Generating metadata for crossdart"
 pub global run crossdart --input=. --dart-sdk=$DART_SDK
 echo "Copying the crossdart json file to S3 ($CROSSDART_HASH)"
-s3cmd -P -c ./.s3cfg put ./crossdart.json s3://my-bucket/my-project/$CROSSDART_HASH/crossdart.json
+s3cmd -P -c ./.s3cfg put ./crossdart.json s3://my-bucket/crossdart/my-github-name/my-project/$CROSSDART_HASH/crossdart.json
 ```
 
 Now, every time somebody pushes to 'master', after Travis run, I'll have hyperlinked code of my project on Github.
@@ -151,13 +151,13 @@ specify the URL where it should get the analysis data from (in case you generate
 You only should provide a base for this URL, the extension will later append git sha and 'crossdart.json' to it. I.e. if you specify URL in this field like:
 
 ```
-https://my-bucket.s3.amazonaws.com/crossdart/my-project
+https://my-bucket.s3.amazonaws.com/crossdart
 ```
 
 then the extension will try to find crossdart.json files by URLs, which will look like:
 
 ```
-https://my-bucket.s3.amazonaws.com/crossdart/my-project/4a9f8b41d042183116bbfaba31bdea109cc3080d/crossdart.json
+https://my-bucket.s3.amazonaws.com/crossdart/my-github-name/my-project/4a9f8b41d042183116bbfaba31bdea109cc3080d/crossdart.json
 ```
 
 If your project is private, you also will need to create access token, and paste it into the field in the popup as well.
